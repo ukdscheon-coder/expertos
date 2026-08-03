@@ -1,18 +1,117 @@
-const DATA={medical:{label:'의료',icon:'🩺',sources:['WHO','IMDRF','FDA','EMA','MHRA','MFDS']},health:{label:'건강',icon:'🌿',sources:['WHO','NHS','CDC','Cochrane','EFSA']},economy:{label:'경제',icon:'📈',sources:['IMF','World Bank','OECD','BIS','BoE']},legal:{label:'법률',icon:'⚖️',sources:['공식 법령','법원 판례','정부기관','규제기관']},defence:{label:'군사',icon:'🛰️',sources:['NATO','IISS','SIPRI','RUSI','RAND']},fashion:{label:'패션',icon:'👗',sources:['BoF','Vogue Business','WGSN','Lyst']},education:{label:'교육',icon:'🎓',sources:['UNESCO','OECD','World Bank','정부 교육기관']},ai:{label:'AI',icon:'🤖',sources:['공식 모델 문서','연구 논문','GitHub','벤치마크']},agi:{label:'AGI',icon:'🧠',sources:['연구기관','평가기관','안전 연구','동료평가 논문']},science:{label:'과학',icon:'🔬',sources:['Nature','Science','Cell','NASA','CERN','NIH']}};
-const OPPORTUNITY={medical:[82,76,80],health:[80,83,84],economy:[88,79,81],legal:[78,72,74],defence:[91,66,70],fashion:[73,86,82],education:[84,87,88],ai:[98,84,92],agi:[94,58,67],science:[86,78,81]};
-let selected='medical',pendingSpeechText='',recognition=null,isListening=false,lastLang=navigator.language||'ko-KR';
-const $=id=>document.getElementById(id),esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-const API_URL=(window.EXPERTOS_CONFIG&&window.EXPERTOS_CONFIG.apiUrl)||'';
-$('todayLabel').textContent=new Intl.DateTimeFormat('ko-KR',{dateStyle:'full'}).format(new Date());
-function renderCategories(){$('categoryGrid').innerHTML=Object.entries(DATA).map(([k,v])=>`<button class="category ${k===selected?'active':''}" data-key="${k}"><span class="icon">${v.icon}</span><strong>${v.label}</strong></button>`).join('');document.querySelectorAll('.category').forEach(b=>b.onclick=()=>{selected=b.dataset.key;renderCategories();renderBriefing();renderScores()})}
-function renderBriefing(){const d=DATA[selected];$('briefingTitle').textContent=`${d.label} 브리핑`;$('selectedDomainLabel').textContent=d.label;$('briefingList').innerHTML=`<article class="brief-card"><div class="brief-top"><h3>${d.label} 주요 출처</h3></div><p>질문 내용에 따라 최신 공식·학술 자료를 확인합니다.</p><div class="meta">${d.sources.map(s=>`<span class="tag">${s}</span>`).join('')}</div></article>`}
-function renderScores(){const o=OPPORTUNITY[selected];$('trendScore').textContent=o[0];$('timingScore').textContent=o[1];$('opportunityScore').textContent=o[2]}
-function addAssistant(text,sources=[]){const box=$('chatbox'),wrap=document.createElement('div'),msg=document.createElement('div'),btn=document.createElement('button');wrap.className='assistant-block';msg.className='message assistant';msg.textContent=text;wrap.appendChild(msg);if(sources.length){const src=document.createElement('div');src.className='meta';src.innerHTML=sources.map((s,i)=>`<a class="tag" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||`출처 ${i+1}`)}</a>`).join('');wrap.appendChild(src)}btn.className='speak-request';btn.textContent='🔊 음성으로 듣기';btn.onclick=()=>{pendingSpeechText=text;$('voiceApprovalModal').showModal()};wrap.appendChild(btn);box.appendChild(wrap);box.scrollTop=box.scrollHeight}
-async function askBackend(question){if(!API_URL)throw new Error('SERVICE_UNAVAILABLE');const r=await fetch(`${API_URL.replace(/\/$/,'')}/answer`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,selectedDomain:selected,language:navigator.language||'ko-KR'})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'SERVICE_ERROR');if(!j.answer)throw new Error('EMPTY_ANSWER');return{answer:j.answer,sources:Array.isArray(j.sources)?j.sources:[]}}
-$('questionForm').onsubmit=async e=>{e.preventDefault();const q=$('questionInput').value.trim();if(!q)return;$('chatbox').insertAdjacentHTML('beforeend',`<div class="message user">${esc(q)}</div>`);$('questionInput').value='';const loading=document.createElement('div');loading.className='message assistant';loading.textContent='답변을 준비하고 있습니다…';$('chatbox').appendChild(loading);try{const result=await askBackend(q);loading.remove();addAssistant(result.answer,result.sources)}catch(err){loading.remove();const message=err.message==='SERVICE_UNAVAILABLE'?'현재 답변 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.':'답변을 가져오지 못했습니다. 잠시 후 다시 시도해 주세요.';addAssistant(message)}};
-$('generateOpportunityBtn').onclick=()=>{const q=`${DATA[selected].label} 분야의 현재 글로벌 동향, 사업기회, 적정 진입 시점과 주요 위험을 최신 근거와 함께 분석해 주세요.`;$('questionInput').value=q;$('questionForm').requestSubmit()};
-$('globalSearchForm').onsubmit=async e=>{e.preventDefault();const q=$('globalSearchInput').value.trim(),out=$('globalSearchResults'),status=$('globalSearchStatus');if(!q)return;status.textContent='검색 중…';out.innerHTML='';try{const r=await fetch(`https://api.openalex.org/works?search=${encodeURIComponent(q)}&per-page=10`),j=await r.json();out.innerHTML=(j.results||[]).map(w=>`<article class="search-card"><h3>${esc(w.display_name)}</h3><p>${esc((w.authorships||[]).slice(0,3).map(a=>a.author?.display_name).filter(Boolean).join(', '))}</p><a href="${esc(w.doi||w.id)}" target="_blank">기록 열기</a></article>`).join('');status.textContent=`${(j.results||[]).length}개 결과`}catch{status.textContent='검색 실패'}};
-function detectLang(t){if(/[가-힣]/.test(t))return'ko-KR';if(/[ぁ-んァ-ン]/.test(t))return'ja-JP';if(/[一-龥]/.test(t))return'zh-CN';return'en-GB'}
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){recognition=new SR();recognition.interimResults=true;recognition.onresult=e=>{let t='';for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;$('questionInput').value=t.trim();lastLang=detectLang(t)};recognition.onend=()=>{isListening=false;$('micBtn').classList.remove('listening');$('speechStatus').textContent='음성 입력 완료'};$('micBtn').onclick=()=>{if(isListening){recognition.stop();return}recognition.lang=$('speechLanguage').value==='auto'?lastLang:$('speechLanguage').value;isListening=true;$('micBtn').classList.add('listening');$('speechStatus').textContent='듣는 중…';recognition.start()}}else{$('micBtn').disabled=true}
-$('approveVoice').onclick=()=>{const u=new SpeechSynthesisUtterance(pendingSpeechText);u.lang=detectLang(pendingSpeechText);speechSynthesis.cancel();speechSynthesis.speak(u);pendingSpeechText='';$('voiceApprovalModal').close()};$('cancelVoice').onclick=()=>{$('voiceApprovalModal').close()};$('sourcesBtn').onclick=()=>{$('modalTitle').textContent=`${DATA[selected].label} 주요 출처`;$('modalBody').innerHTML=DATA[selected].sources.map(s=>`<div class="source-row"><strong>${s}</strong></div>`).join('');$('modal').showModal()};$('settingsBtn').onclick=()=>{$('modalTitle').textContent='설정';$('modalBody').innerHTML='<p>기본 출력은 문자이며, 음성 출력은 승인 후 1회만 재생됩니다.</p>';$('modal').showModal()};$('closeModal').onclick=()=>$('modal').close();
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js');renderCategories();renderBriefing();renderScores();
+let pendingSpeechText='',recognition=null,isListening=false,lastLang=navigator.language||'ko-KR';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[m]));
+const API_URL=(window.EXPERTOS_CONFIG&&window.EXPERTOS_CONFIG.apiUrl||'').replace(/\/$/,'');
+
+function addAssistant(text,sources=[]){
+  const box=$('chatbox');
+  const wrap=document.createElement('div');
+  const msg=document.createElement('div');
+  const btn=document.createElement('button');
+  wrap.className='assistant-block';
+  msg.className='message assistant';
+  msg.textContent=text;
+  wrap.appendChild(msg);
+  if(Array.isArray(sources)&&sources.length){
+    const src=document.createElement('div');
+    src.className='meta';
+    src.innerHTML=sources.map((s,i)=>`<a class="tag" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title||`출처 ${i+1}`)}</a>`).join('');
+    wrap.appendChild(src);
+  }
+  btn.className='speak-request';
+  btn.type='button';
+  btn.textContent='🔊 음성으로 듣기';
+  btn.onclick=()=>{pendingSpeechText=text;$('voiceApprovalModal').showModal()};
+  wrap.appendChild(btn);
+  box.appendChild(wrap);
+  box.scrollTop=box.scrollHeight;
+}
+
+async function askBackend(question){
+  if(!API_URL)throw new Error('SERVICE_UNAVAILABLE');
+  const endpoint=API_URL.endsWith('/answer')?API_URL:`${API_URL}/answer`;
+  const response=await fetch(endpoint,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({question,language:navigator.language||'ko-KR'})
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.code||data.error||`HTTP_${response.status}`);
+  if(!data.answer)throw new Error('EMPTY_ANSWER');
+  return{answer:data.answer,sources:Array.isArray(data.sources)?data.sources:[]};
+}
+
+$('questionForm').onsubmit=async event=>{
+  event.preventDefault();
+  const input=$('questionInput');
+  const question=input.value.trim();
+  if(!question)return;
+  $('chatbox').insertAdjacentHTML('beforeend',`<div class="message user">${esc(question)}</div>`);
+  input.value='';
+  const loading=document.createElement('div');
+  loading.className='message assistant';
+  loading.textContent='최신 자료를 확인하고 답변을 준비하고 있습니다…';
+  $('chatbox').appendChild(loading);
+  try{
+    const result=await askBackend(question);
+    loading.remove();
+    addAssistant(result.answer,result.sources);
+  }catch(error){
+    console.error('ExpertOS request failed:',error);
+    loading.remove();
+    addAssistant('현재 답변을 가져오지 못했습니다. 잠시 후 다시 시도해 주세요.');
+  }
+};
+
+function detectLang(text){
+  if(/[가-힣]/.test(text))return'ko-KR';
+  if(/[ぁ-んァ-ン]/.test(text))return'ja-JP';
+  if(/[一-龥]/.test(text))return'zh-CN';
+  return'en-GB';
+}
+
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SpeechRecognition){
+  recognition=new SpeechRecognition();
+  recognition.interimResults=true;
+  recognition.continuous=false;
+  recognition.onresult=event=>{
+    let text='';
+    for(let i=event.resultIndex;i<event.results.length;i++)text+=event.results[i][0].transcript;
+    $('questionInput').value=text.trim();
+    if(text.trim())lastLang=detectLang(text);
+  };
+  recognition.onerror=()=>{$('speechStatus').textContent='음성 인식을 다시 시도해 주세요.'};
+  recognition.onend=()=>{
+    isListening=false;
+    $('micBtn').classList.remove('listening');
+    $('speechStatus').textContent='음성 입력 완료';
+  };
+  $('micBtn').onclick=()=>{
+    if(isListening){recognition.stop();return;}
+    const selected=$('speechLanguage').value;
+    recognition.lang=selected==='auto'?lastLang:selected;
+    isListening=true;
+    $('micBtn').classList.add('listening');
+    $('speechStatus').textContent='듣는 중…';
+    recognition.start();
+  };
+}else{
+  $('micBtn').disabled=true;
+  $('speechStatus').textContent='이 브라우저에서는 음성 입력을 지원하지 않습니다.';
+}
+
+$('approveVoice').onclick=()=>{
+  if(!pendingSpeechText)return;
+  const utterance=new SpeechSynthesisUtterance(pendingSpeechText);
+  utterance.lang=detectLang(pendingSpeechText);
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
+  pendingSpeechText='';
+  $('voiceApprovalModal').close();
+};
+$('cancelVoice').onclick=()=>{pendingSpeechText='';$('voiceApprovalModal').close()};
+
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.register('./service-worker.js?v=10').then(reg=>reg.update()).catch(console.error);
+}
