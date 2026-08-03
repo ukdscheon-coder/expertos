@@ -1,0 +1,10 @@
+{
+  "name": "ExpertOS — 분야별 AI 컨설턴트",
+  "short_name": "ExpertOS",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#07101e",
+  "theme_color": "#0b1220",
+  "lang": "ko",
+  "icons": []
+}
