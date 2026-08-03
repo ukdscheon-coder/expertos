@@ -1,1 +1,1 @@
-window.EXPERTOS_CONFIG={apiUrl:''};
+window.EXPERTOS_CONFIG={apiUrl:'https://expertos.uk-dscheon.workers.dev/answer'};
