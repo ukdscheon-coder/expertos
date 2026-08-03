@@ -1,10 +1,17 @@
 {
+  "id": "./",
   "name": "ExpertOS — 분야별 AI 컨설턴트",
   "short_name": "ExpertOS",
+  "description": "Evidence-based AI consulting powered by trusted global expert knowledge.",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone"],
+  "orientation": "portrait-primary",
   "background_color": "#07101e",
   "theme_color": "#0b1220",
   "lang": "ko",
-  "icons": []
+  "icons": [
+    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
 }
