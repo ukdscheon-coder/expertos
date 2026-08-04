@@ -1,9 +1,9 @@
 {
   "id":"./",
-  "name":"글로벌 사업공고 — 한국·영국 정부기회",
+  "name":"글로벌 사업공고 — 통합 정부기회",
   "short_name":"글로벌 공고",
-  "description":"한국과 영국의 정부지원·공공조달 공고를 해외기업 참여조건별로 검색하는 모바일 앱",
-  "start_url":"./?v=12",
+  "description":"여러 국가의 정부지원·공공조달 공고를 해외기업 참여조건별로 통합 검색하는 모바일 앱",
+  "start_url":"./?v=13",
   "scope":"./",
   "display":"standalone",
   "orientation":"portrait-primary",
