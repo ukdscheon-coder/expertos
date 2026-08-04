@@ -1,9 +1,9 @@
 {
   "id":"./",
-  "name":"사업공고 알리미 — 한국 공공기관 지원사업",
-  "short_name":"사업공고",
-  "description":"정부·지자체·공공기관의 지원사업 공고를 검색하고 저장하는 모바일 앱",
-  "start_url":"./?v=11",
+  "name":"글로벌 사업공고 — 한국·영국 정부기회",
+  "short_name":"글로벌 공고",
+  "description":"한국과 영국의 정부지원·공공조달 공고를 해외기업 참여조건별로 검색하는 모바일 앱",
+  "start_url":"./?v=12",
   "scope":"./",
   "display":"standalone",
   "orientation":"portrait-primary",
