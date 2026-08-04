@@ -1,5 +1,5 @@
-const CACHE='funding-notices-v11';
-const ASSETS=['./?v=11','./index.html','./styles.css?v=11','./config.js?v=11','./app.js?v=11','./manifest.webmanifest','./icon.svg'];
+const CACHE='global-opportunities-v12';
+const ASSETS=['./?v=12','./index.html','./styles.css?v=12','./config.js?v=12','./app.js?v=12','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)))});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)));await self.clients.claim()})())});
-self.addEventListener('fetch',event=>{const req=event.request;if(req.method!=='GET')return;const url=new URL(req.url);if(url.origin===self.location.origin){event.respondWith((async()=>{try{const fresh=await fetch(req,{cache:'no-store'});const cache=await caches.open(CACHE);cache.put(req,fresh.clone());return fresh}catch{return(await caches.match(req))||(await caches.match('./?v=11'))}})())}});
+self.addEventListener('fetch',event=>{const req=event.request;if(req.method!=='GET')return;const url=new URL(req.url);if(url.origin===self.location.origin){event.respondWith((async()=>{try{const fresh=await fetch(req,{cache:'no-store'});const cache=await caches.open(CACHE);cache.put(req,fresh.clone());return fresh}catch{return(await caches.match(req))||(await caches.match('./?v=12'))}})())}});
