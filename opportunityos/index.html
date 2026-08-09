@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="description" content="OpportunityOS - 오늘 내 사업이 해야 할 일을 추천하는 Business Opportunity Intelligence Agent" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>OpportunityOS</title>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">BUSINESS OPPORTUNITY INTELLIGENCE</div>
+      <h1>OpportunityOS</h1>
+    </div>
+    <button id="reportBtn" class="ghost">정보지 미리보기</button>
+  </header>
+
+  <main>
+    <section class="hero card">
+      <div>
+        <p class="eyebrow">TODAY</p>
+        <h2>검색하지 말고, 오늘 할 일을 받으세요.</h2>
+        <p class="muted">Grant · Tender · Partner · Supplier · Risk · AI Saving을 한 번에 평가합니다.</p>
+      </div>
+      <div class="hero-metric"><span id="totalValue">£0</span><small>Potential value</small></div>
+    </section>
+
+    <section class="card profile-card">
+      <div class="section-head"><h3>Company DNA</h3><span id="profileState" class="pill">설정 필요</span></div>
+      <div class="grid two">
+        <label>회사명<input id="companyName" value="4CF Group Ltd" /></label>
+        <label>국가<select id="country"><option value="UK">United Kingdom</option><option value="KR">South Korea</option><option value="EU">EU</option></select></label>
+        <label>산업<input id="industries" value="healthcare, diagnostics, AI, consulting, import export" /></label>
+        <label>직원수<select id="employees"><option value="1-5">1–5</option><option value="6-20">6–20</option><option value="21-50">21–50</option></select></label>
+        <label>관심 시장<input id="markets" value="UK, Korea, EU" /></label>
+        <label>최대 프로젝트 규모 (£)<input id="maxProject" type="number" value="250000" min="0" /></label>
+      </div>
+      <button id="analyseBtn" class="primary full">내 사업의 오늘 기회 분석</button>
+    </section>
+
+    <section class="summary-grid">
+      <div class="metric card"><strong id="applyCount">0</strong><span>APPLY</span></div>
+      <div class="metric card"><strong id="contactCount">0</strong><span>CONTACT</span></div>
+      <div class="metric card"><strong id="riskCount">0</strong><span>RISK</span></div>
+      <div class="metric card"><strong id="savingTotal">£0</strong><span>SAVING</span></div>
+    </section>
+
+    <section>
+      <div class="section-head"><div><p class="eyebrow">RANKED FOR YOU</p><h3>오늘의 Top Opportunities</h3></div><button id="savedOnly" class="ghost small">저장만 보기</button></div>
+      <div id="opportunityList" class="list"></div>
+      <div id="emptyState" class="card empty hidden">현재 조건에 맞는 기회가 없습니다. 회사 DNA를 수정하거나 필터를 해제하세요.</div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button data-tab="home" class="active">오늘</button>
+    <button data-tab="saved">저장</button>
+    <button data-tab="report">정보지</button>
+  </nav>
+
+  <div id="drawer" class="drawer hidden" role="dialog" aria-modal="true">
+    <div class="drawer-panel">
+      <button id="closeDrawer" class="close">×</button>
+      <div id="drawerContent"></div>
+    </div>
+  </div>
+
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
