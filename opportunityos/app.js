@@ -5,8 +5,9 @@
 
   function loadJSON(key, fallback){ try { const v=localStorage.getItem(key); return v?JSON.parse(v):fallback; } catch { return fallback; } }
   function saveJSON(key, value){ try { localStorage.setItem(key, JSON.stringify(value)); } catch {} }
-  function esc(v){ return String(v ?? '').replace(/[&<>'\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c])); }
+  function esc(v){ return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
   function terms(v){ return String(v||'').toLowerCase().split(/[,;/]+/).map(s=>s.trim()).filter(Boolean); }
+  function marketCode(v){ const x=String(v||'').trim().toLowerCase(); if(['uk','united kingdom','britain','great britain'].includes(x)) return 'UK'; if(['kr','korea','south korea','republic of korea'].includes(x)) return 'KR'; if(['eu','europe','european union'].includes(x)) return 'EU'; if(['global','worldwide','world'].includes(x)) return 'GLOBAL'; return x.toUpperCase(); }
   function daysUntil(date){ if(!date) return null; const t=Date.parse(date+'T23:59:59Z'); if(Number.isNaN(t)) return null; return Math.ceil((t-Date.now())/86400000); }
   function money(v){ const n=Math.abs(Number(v)||0); return '£'+n.toLocaleString('en-GB',{maximumFractionDigits:0}); }
 
@@ -19,7 +20,7 @@
     let score=35, reasons=[], risks=[];
     const overlap=o.industries.filter(i=>p.industries.some(pi=>pi.includes(i)||i.includes(pi)));
     score += Math.min(30, overlap.length*10); if(overlap.length) reasons.push(`산업 적합: ${overlap.join(', ')}`); else risks.push('산업 키워드 일치가 낮음');
-    if(o.country==='GLOBAL'||o.country===p.country||p.markets.some(m=>m.toUpperCase().includes(o.country))){ score+=15; reasons.push('지역/시장 조건 적합'); }
+    if(o.country==='GLOBAL'||o.country===p.country||p.markets.some(m=>marketCode(m)===o.country)){ score+=15; reasons.push('지역/시장 조건 적합'); }
     else { score-=10; risks.push('지역 조건 추가 확인 필요'); }
     if(o.foreign==='uk_only' && p.country!=='UK'){ score=Math.min(score,49); risks.push('UK 전용 가능성'); }
     if(o.foreign==='local_or_partner' && p.country!=='UK'){ score=Math.min(score,69); risks.push('현지 파트너 필요 가능성'); }
